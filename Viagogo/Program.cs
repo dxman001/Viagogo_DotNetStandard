@@ -17,9 +17,8 @@ namespace Viagogo
         public string Name { get; set; }
         public string City { get; set; }
     }
-    public class IgnorCaseComparator : IEqualityComparer<string>
+    public class IgnoreCaseComparator : IEqualityComparer<string>
     {
-
         public bool Equals(string x, string y) =>
             x.Equals(y, StringComparison.OrdinalIgnoreCase);
       
@@ -56,7 +55,6 @@ namespace Viagogo
             };
 
 
-
             // #1. find out all events that are in cities of customers for a multiple customers 
             // then add to email.
             // i Used Custom EquityComparator 'IgnorCaseComparator()'  b/c sting comparing might be tricky due to typo mistake
@@ -64,7 +62,7 @@ namespace Viagogo
             Console.WriteLine("Q #1 -Find out all events that are in cities of customers for a multiple customers then add to email");
             events.Join(customers, e => e.City, c => c.City, (e, c) =>
                     new { Event = e, Customer = c },
-                    new IgnorCaseComparator())
+                    new IgnoreCaseComparator())
                 .OrderBy(r => r.Customer.Name)
                 .ToList()
                 .ForEach(r => AddToEmail(r.Customer, r.Event));
@@ -87,8 +85,8 @@ namespace Viagogo
             Console.WriteLine("Q #2 - finding all events at customer city and nearby cities and maximum of 5 events per customer for a single customer then add to email");
             events
                 .Select(e => new { Customer = customer, Event = e })
-                .OrderBy(e => GetDistance(e.Customer.City, e.Event.City))
                 .OrderBy(e => e.Customer)
+                .ThenBy(e => GetDistance(e.Customer.City, e.Event.City))
                 .Distinct()
                 .Take(noOfEvents)
                 .ToList()
@@ -107,8 +105,8 @@ namespace Viagogo
             Console.WriteLine("Q #3 & #4 - If the GetDistance method is an API call which could fail or is too expensive we don't want the process to fail");
             events
                 .Select(e => new { Customer = customer, Event = e })
-                .OrderBy(e => TryGetDistance(e.Customer.City, e.Event.City))
                 .OrderBy(e => e.Customer)
+                .ThenBy(e => TryGetDistance(e.Customer.City, e.Event.City))
                 .Distinct()
                 .Take(noOfEvents)
                 .ToList()
@@ -122,9 +120,9 @@ namespace Viagogo
             Console.WriteLine("Q #5 - If we also want to sort the resulting events by other fields like price");
             events
                 .Select(e => new { Customer = customer, Event = e })
-                .OrderBy(e => GetPrice(e.Event))
-                .OrderBy(e => TryGetDistance(e.Customer.City, e.Event.City))
                 .OrderBy(e => e.Customer)
+                .ThenBy(e => TryGetDistance(e.Customer.City, e.Event.City))
+                .ThenBy(e => GetPrice(e.Event))
                 .Distinct()
                 .Take(noOfEvents)
                 .ToList()
